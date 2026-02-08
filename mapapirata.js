@@ -67,14 +67,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Evento cuando empieza a arrastrar (ratón)
         pieza.addEventListener('dragstart', function(e) {
-            e.target.classList.add('dragging');
-            e.dataTransfer.setData('text/plain', e.target.dataset.pieza);
-            e.dataTransfer.effectAllowed = 'move';
+            e.preventDefault(); // Cancelar drag nativo
+            iniciarArrastreRaton(e, pieza);
         });
         
         // Evento cuando termina de arrastrar
         pieza.addEventListener('dragend', function(e) {
-            e.target.classList.remove('dragging');
+            e.preventDefault();
+            terminarArrastreRaton(e);
         });
         
         // Evento touch para móviles (arrastrar con el dedo)
@@ -115,112 +115,128 @@ document.addEventListener('DOMContentLoaded', function() {
         mensajeDiv.classList.remove('show');
     }
     
-    // ============================================
+    // ====================================
     // EVENTOS DE DRAG & DROP (RATÓN)
     // ============================================
     
-    // Cuando arrastramos sobre una celda
-    function sobreCelda(e) {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-    }
+    var piezaRaton = null;
+    var celdaOrigen = null;
+    var rectOriginal = null;
     
-    // Cuando entramos en una celda
-    function entrarCelda(e) {
-        var celda = e.target.closest('.celda-rejilla');
-        if (celda) {
-            celda.classList.add('drag-over');
-        }
-    }
-    
-    // Cuando salimos de una celda
-    function salirCelda(e) {
-        var celda = e.target.closest('.celda-rejilla');
-        if (celda && !celda.contains(e.relatedTarget)) {
-            celda.classList.remove('drag-over');
-        }
-    }
-    
-    // Cuando soltamos la pieza en una celda
-    function soltarPieza(e) {
-        e.preventDefault();
+    function iniciarArrastreRaton(e, pieza) {
+        piezaRaton = pieza;
+        celdaOrigen = pieza.parentElement;
+        rectOriginal = pieza.getBoundingClientRect();
         
-        var celda = e.target.closest('.celda-rejilla');
-        if (celda) {
-            celda.classList.remove('drag-over');
+        // Cambiar a fixed
+        pieza.style.position = 'fixed';
+        pieza.style.left = rectOriginal.left + 'px';
+        pieza.style.top = rectOriginal.top + 'px';
+        pieza.style.zIndex = '1000';
+        pieza.style.width = rectOriginal.width + 'px';
+        pieza.style.height = rectOriginal.height + 'px';
+        pieza.style.margin = '0';
+        pieza.style.transform = 'translate3d(0,0,0)';
+        pieza.style.pointerEvents = 'none';
+        document.body.appendChild(pieza);
+        
+        // Mover al cursor
+        moverAPiezaRaton(e.clientX, e.clientY);
+        
+        // Eventos globales
+        document.addEventListener('mousemove', moverRaton);
+        document.addEventListener('mouseup', terminarArrastreRaton);
+    }
+    
+    function moverRaton(e) {
+        if (piezaRaton) {
+            moverAPiezaRaton(e.clientX, e.clientY);
+        }
+    }
+    
+    function moverAPiezaRaton(x, y) {
+        if (piezaRaton) {
+            piezaRaton.style.left = (x - piezaRaton.offsetWidth / 2) + 'px';
+            piezaRaton.style.top = (y - piezaRaton.offsetHeight / 2) + 'px';
+        }
+    }
+    
+    function terminarArrastreRaton(e) {
+        document.removeEventListener('mousemove', moverRaton);
+        document.removeEventListener('mouseup', terminarArrastreRaton);
+        
+        if (piezaRaton) {
+            var elemento = document.elementFromPoint(e.clientX, e.clientY);
+            var celda = elemento ? elemento.closest('.celda-rejilla') : null;
             
-            // Cogemos el número de la pieza que soltamos
-            var numeroPieza = e.dataTransfer.getData('text/plain');
-            var numeroEsperado = celda.dataset.pieza;
-            
-            // Si la celda ya tiene algo, no hacemos nada
-            if (!celda.hasChildNodes()) {
-                // Buscamos la pieza que se estaba arrastrando
-                var piezaArrastrada = document.querySelector('.pieza-puzzle.dragging[data-pieza="' + numeroPieza + '"]');
+            if (celda && !celda.hasChildNodes()) {
+                var numeroPieza = piezaRaton.dataset.pieza;
+                var numeroEsperado = celda.dataset.pieza;
                 
-                // Si la pieza es la correcta (número coincide)
                 if (numeroPieza === numeroEsperado) {
-                    // Clonamos la pieza
-                    var clon = piezaArrastrada.cloneNode(true);
-                    clon.classList.remove('dragging');
-                    clon.draggable = false;
-                    clon.style.cursor = 'default';
-                    clon.style.position = 'absolute';
-                    clon.style.top = '0';
-                    clon.style.left = '0';
-                    clon.style.width = '100%';
-                    clon.style.height = '100%';
-                    clon.style.border = 'none';
-                    clon.style.borderRadius = '0';
-                    clon.style.transform = 'none';
+                    piezaRaton.style.position = 'absolute';
+                    piezaRaton.style.left = '0';
+                    piezaRaton.style.top = '0';
+                    piezaRaton.style.zIndex = '';
+                    piezaRaton.style.width = '';
+                    piezaRaton.style.height = '';
+                    piezaRaton.style.margin = '';
+                    piezaRaton.style.transform = '';
+                    piezaRaton.style.pointerEvents = '';
+                    celda.appendChild(piezaRaton);
                     
-                    // Ponemos la pieza en la celda
-                    celda.appendChild(clon);
-                    
-                    // Eliminamos la pieza del contenedor original
-                    piezaArrastrada.remove();
-                    
-                    // Marcamos la celda como correcta
                     celda.classList.add('correct');
                     piezasColocadas.push(numeroPieza);
                     
-                    // Reproducimos sonido de splat
+                    // Sonido
                     var audio = new Audio('sounds/splat.mp3');
                     audio.volume = 0.5;
                     audio.play().catch(function() {});
                     
-                    // Si todas las piezas están colocadas, ganar
                     if (piezasColocadas.length === totalPiezas) {
-                        // Reproducimos sonido de victoria
                         var aplausos = new Audio('sounds/claps.mp3');
                         aplausos.volume = 0.5;
                         aplausos.play().catch(function() {});
-                        
-                        // Mostramos mensaje después de un pequeño delay
                         setTimeout(function() {
                             mensajeDiv.classList.add('show');
                         }, 300);
                     }
+                } else {
+                    devolverRatonOrigen();
                 }
+            } else {
+                devolverRatonOrigen();
             }
+            
+            piezaRaton = null;
+            celdaOrigen = null;
+            rectOriginal = null;
         }
     }
-
-    // Añadimos los eventos a cada celda del grid
-    for (var i = 0; i < celdasGrid.length; i++) {
-        celdasGrid[i].addEventListener('dragover', sobreCelda);
-        celdasGrid[i].addEventListener('dragenter', entrarCelda);
-        celdasGrid[i].addEventListener('dragleave', salirCelda);
-        celdasGrid[i].addEventListener('drop', soltarPieza);
+    
+    function devolverRatonOrigen() {
+        if (piezaRaton && celdaOrigen) {
+            piezaRaton.style.position = '';
+            piezaRaton.style.left = '';
+            piezaRaton.style.top = '';
+            piezaRaton.style.zIndex = '';
+            piezaRaton.style.width = '';
+            piezaRaton.style.height = '';
+            piezaRaton.style.margin = '';
+            piezaRaton.style.transform = '';
+            piezaRaton.style.pointerEvents = '';
+            celdaOrigen.appendChild(piezaRaton);
+        }
     }
     
     // ============================================
     // TOUCH PARA MÓVILES (ARRASTRAR CON EL DEDO)
     // ============================================
-    var piezaTouch = null;      // Pieza que se está tocando
-    var clonTouch = null;       // Clon de la pieza que se mueve
-    var offsetX = 0;            // Offset horizontal
-    var offsetY = 0;            // Offset vertical
+    // Variables para touch
+    var piezaTouch = null;
+    var celdaOriginal = null;
+    var xOriginal = 0;
+    var yOriginal = 0;
     
     // Empezar a tocar una pieza
     function iniciarTouch(e) {
@@ -229,130 +245,119 @@ document.addEventListener('DOMContentLoaded', function() {
         var toque = e.touches[0];
         var pieza = e.target.closest('.pieza-puzzle');
         
-        // Si es una pieza válida y no está colocada
         if (pieza && !pieza.parentElement.classList.contains('celda-rejilla')) {
             piezaTouch = pieza;
+            celdaOriginal = pieza.parentElement;
+            
+            // Posición actual
             var rect = pieza.getBoundingClientRect();
-            offsetX = toque.clientX - rect.left;
-            offsetY = toque.clientY - rect.top;
+            xOriginal = toque.clientX;
+            yOriginal = toque.clientY;
             
-            // Creamos un clon para ver mientras arrastramos
-            clonTouch = pieza.cloneNode(true);
-            clonTouch.classList.add('dragging');
-            clonTouch.style.position = 'fixed';
-            clonTouch.style.zIndex = '1000';
-            clonTouch.style.width = rect.width + 'px';
-            clonTouch.style.height = rect.height + 'px';
-            clonTouch.style.pointerEvents = 'none';
-            document.body.appendChild(clonTouch);
+            // Cambiar a fixed
+            pieza.style.position = 'fixed';
+            pieza.style.left = rect.left + 'px';
+            pieza.style.top = rect.top + 'px';
+            pieza.style.zIndex = '1000';
+            pieza.style.width = rect.width + 'px';
+            pieza.style.height = rect.height + 'px';
+            pieza.style.margin = '0';
+            pieza.style.transform = 'translate3d(0,0,0)';
+            pieza.style.transition = 'none';
+            pieza.style.pointerEvents = 'none'; // Permite detectar celda bajo el dedo
+            document.body.appendChild(pieza);
             
-            // Posicionamos el clon donde está el dedo
-            clonTouch.style.left = (toque.clientX - offsetX) + 'px';
-            clonTouch.style.top = (toque.clientY - offsetY) + 'px';
+            // Mover al dedo
+            pieza.style.left = (toque.clientX - rect.width / 2) + 'px';
+            pieza.style.top = (toque.clientY - rect.height / 2) + 'px';
             
-            // Hacemos la pieza original más transparente
-            pieza.style.opacity = '0.5';
-            
-            // Escuchamos movimiento y fin del toque
             document.addEventListener('touchmove', moverTouch, { passive: false });
             document.addEventListener('touchend', terminarTouch);
         }
     }
     
-    // Mover el dedo por la pantalla
+    // Mover el dedo
     function moverTouch(e) {
         e.preventDefault();
-        if (clonTouch && piezaTouch) {
+        
+        if (piezaTouch) {
             var toque = e.touches[0];
-            clonTouch.style.left = (toque.clientX - offsetX) + 'px';
-            clonTouch.style.top = (toque.clientY - offsetY) + 'px';
-            
-            // Quitamos marca de todas las celdas
-            for (var i = 0; i < celdasGrid.length; i++) {
-                celdasGrid[i].classList.remove('drag-over');
-            }
-            
-            // Vemos qué hay bajo el dedo
-            var elemento = document.elementFromPoint(toque.clientX, toque.clientY);
-            var celda = elemento ? elemento.closest('.celda-rejilla') : null;
-            if (celda) {
-                celda.classList.add('drag-over');
-            }
+            piezaTouch.style.left = (toque.clientX - piezaTouch.offsetWidth / 2) + 'px';
+            piezaTouch.style.top = (toque.clientY - piezaTouch.offsetHeight / 2) + 'px';
         }
     }
     
-    // Terminar de tocar (soltar la pieza)
+    // Terminar de tocar
     function terminarTouch(e) {
         e.preventDefault();
         
         document.removeEventListener('touchmove', moverTouch);
         document.removeEventListener('touchend', terminarTouch);
         
-        if (clonTouch && piezaTouch) {
+        if (piezaTouch) {
             var toque = e.changedTouches[0];
             var elemento = document.elementFromPoint(toque.clientX, toque.clientY);
             var celda = elemento ? elemento.closest('.celda-rejilla') : null;
             
-            // Si soltamos sobre una celda vacía
             if (celda && !celda.hasChildNodes()) {
                 var numeroPieza = piezaTouch.dataset.pieza;
                 var numeroEsperado = celda.dataset.pieza;
                 
-                // Si es la pieza correcta
                 if (numeroPieza === numeroEsperado) {
-                    var clon = piezaTouch.cloneNode(true);
-                    clon.classList.remove('dragging');
-                    clon.draggable = false;
-                    clon.style.cursor = 'default';
-                    clon.style.position = 'absolute';
-                    clon.style.top = '0';
-                    clon.style.left = '0';
-                    clon.style.width = '100%';
-                    clon.style.height = '100%';
-                    clon.style.border = 'none';
-                    clon.style.borderRadius = '0';
-                    clon.style.transform = 'none';
-                    
-                    celda.appendChild(clon);
-                    piezaTouch.remove();
+                    piezaTouch.style.position = 'absolute';
+                    piezaTouch.style.left = '0';
+                    piezaTouch.style.top = '0';
+                    piezaTouch.style.zIndex = '';
+                    piezaTouch.style.width = '';
+                    piezaTouch.style.height = '';
+                    piezaTouch.style.margin = '';
+                    piezaTouch.style.transform = '';
+                    piezaTouch.style.pointerEvents = '';
+                    celda.appendChild(piezaTouch);
                     
                     celda.classList.add('correct');
                     piezasColocadas.push(numeroPieza);
                     
-                    // Sonido de splat
+                    // Sonido
                     var audio = new Audio('sounds/splat.mp3');
                     audio.volume = 0.5;
                     audio.play().catch(function() {});
                     
-                    // Victoria
                     if (piezasColocadas.length === totalPiezas) {
                         var aplausos = new Audio('sounds/claps.mp3');
                         aplausos.volume = 0.5;
                         aplausos.play().catch(function() {});
-                        
                         setTimeout(function() {
                             mensajeDiv.classList.add('show');
                         }, 300);
                     }
                 } else {
-                    // Piece was wrong, restore opacity
-                    piezaTouch.style.opacity = '1';
+                    piezaTouch.style.position = '';
+                    piezaTouch.style.left = '';
+                    piezaTouch.style.top = '';
+                    piezaTouch.style.zIndex = '';
+                    piezaTouch.style.width = '';
+                    piezaTouch.style.height = '';
+                    piezaTouch.style.margin = '';
+                    piezaTouch.style.transform = '';
+                    piezaTouch.style.pointerEvents = '';
+                    celdaOriginal.appendChild(piezaTouch);
                 }
             } else {
-                // Suelto en otro sitio, restaurar
-                piezaTouch.style.opacity = '1';
+                piezaTouch.style.position = '';
+                piezaTouch.style.left = '';
+                piezaTouch.style.top = '';
+                piezaTouch.style.zIndex = '';
+                piezaTouch.style.width = '';
+                piezaTouch.style.height = '';
+                piezaTouch.style.margin = '';
+                piezaTouch.style.transform = '';
+                piezaTouch.style.pointerEvents = '';
+                celdaOriginal.appendChild(piezaTouch);
             }
             
-            // Limpiamos
-            if (clonTouch) {
-                clonTouch.remove();
-                clonTouch = null;
-            }
             piezaTouch = null;
-            
-            for (var i = 0; i < celdasGrid.length; i++) {
-                celdasGrid[i].classList.remove('drag-over');
-            }
+            celdaOriginal = null;
         }
     }
     

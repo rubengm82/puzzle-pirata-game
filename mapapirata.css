@@ -19,43 +19,38 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
     overflow-x: hidden;
+    overflow-y: auto;
+    touch-action: pan-x pan-y;
+    -webkit-touch-callout: none;
 }
 
-/* Burbujas de oxígeno */
+/* Burbujas de oxígeno - simplificadas */
 .burbuja {
     position: fixed;
     bottom: -50px;
-    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), rgba(100, 180, 220, 0.2));
+    width: 15px;
+    height: 15px;
+    background: rgba(100, 180, 220, 0.3);
     border-radius: 50%;
     pointer-events: none;
-    animation: subir linear infinite;
+    animation: subir 8s linear infinite;
     z-index: 0;
 }
 
-.burbuja:nth-child(1) { left: 10%; width: 20px; height: 20px; animation-duration: 6s; animation-delay: 0s; }
-.burbuja:nth-child(2) { left: 25%; width: 15px; height: 15px; animation-duration: 8s; animation-delay: 1s; }
-.burbuja:nth-child(3) { left: 40%; width: 25px; height: 25px; animation-duration: 5s; animation-delay: 2s; }
-.burbuja:nth-child(4) { left: 55%; width: 18px; height: 18px; animation-duration: 7s; animation-delay: 0.5s; }
-.burbuja:nth-child(5) { left: 70%; width: 22px; height: 22px; animation-duration: 9s; animation-delay: 1.5s; }
-.burbuja:nth-child(6) { left: 85%; width: 12px; height: 12px; animation-duration: 6s; animation-delay: 3s; }
-.burbuja:nth-child(7) { left: 5%; width: 16px; height: 16px; animation-duration: 7s; animation-delay: 2.5s; }
-.burbuja:nth-child(8) { left: 90%; width: 20px; height: 20px; animation-duration: 5s; animation-delay: 0.8s; }
+.burbuja:nth-child(1) { left: 10%; animation-delay: 0s; }
+.burbuja:nth-child(2) { left: 25%; animation-delay: 1s; }
+.burbuja:nth-child(3) { left: 40%; animation-delay: 2s; }
+.burbuja:nth-child(4) { left: 55%; animation-delay: 3s; }
+.burbuja:nth-child(5) { left: 70%; animation-delay: 4s; }
+.burbuja:nth-child(6) { left: 85%; animation-delay: 5s; }
+.burbuja:nth-child(7) { left: 5%; animation-delay: 6s; }
+.burbuja:nth-child(8) { left: 90%; animation-delay: 7s; }
 
 @keyframes subir {
-    0% {
-        transform: translateY(0) scale(1);
-        opacity: 0;
-    }
-    10% {
-        opacity: 0.6;
-    }
-    90% {
-        opacity: 0.6;
-    }
-    100% {
-        transform: translateY(-100vh) scale(0.5);
-        opacity: 0;
-    }
+    0% { transform: translateY(0); opacity: 0; }
+    10% { opacity: 0.5; }
+    90% { opacity: 0.5; }
+    100% { transform: translateY(-100vh); opacity: 0; }
 }
 
 h1 {
@@ -91,7 +86,6 @@ h1 {
     font-family: 'Cinzel', Georgia, serif;
     font-size: 0.9rem;
     white-space: nowrap;
-    transition: all 0.3s ease;
 }
 
 @media (max-width: 1200px) {
@@ -172,14 +166,9 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
     user-select: none;
-}
-
-.celda-rejilla.drag-over {
-    background: rgba(76, 175, 80, 0.4);
 }
 
 .celda-rejilla.correct {
@@ -215,6 +204,8 @@ h1 {
     width: 100%;
     align-content: start;
     user-select: none;
+    touch-action: none;
+    -webkit-touch-callout: none;
 }
 
 .pieza-puzzle {
@@ -222,14 +213,13 @@ h1 {
     cursor: grab;
     border: 2px solid #8b4513;
     border-radius: 8px;
-    transition: all 0.3s ease;
     user-select: none;
     overflow: hidden;
+    touch-action: none;
+    -webkit-touch-callout: none;
 }
 
 .pieza-puzzle:hover {
-    transform: scale(1.05);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
     border-color: #d4af37;
 }
 
@@ -253,19 +243,20 @@ h1 {
 
 #mensaje {
     position: fixed;
-    inset: 0;
-    margin: auto;
-    width: fit-content;
-    height: fit-content;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 90%;
+    max-height: 90%;
+    background: #1a1a2e;
     border: 4px solid #d4af37;
     border-radius: 20px;
-    padding: 40px 60px;
+    padding: 20px;
     text-align: center;
     z-index: 1000;
     display: none;
-    animation: rebote 0.5s ease;
     box-shadow: 0 0 50px rgba(212, 175, 55, 0.5);
+    overflow: auto;
 }
 
 #mensaje.show {
@@ -276,62 +267,35 @@ h1 {
 }
 
 #mensaje h2 {
-    font-size: 2.5rem;
+    font-size: 2rem;
     color: #4caf50;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     user-select: none;
 }
 
 #mensaje p {
-    font-size: 1.2rem;
+    font-size: 1rem;
     color: #d4af37;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     user-select: none;
 }
 
 #boton-reiniciar {
-    background: linear-gradient(135deg, #d4af37 0%, #8b4513 100%);
+    background: #d4af37;
     color: #1a1a2e;
     border: none;
-    padding: 15px 30px;
-    font-size: 1.2rem;
+    padding: 12px 24px;
+    font-size: 1rem;
     border-radius: 10px;
     cursor: pointer;
-    transition: all 0.3s ease;
     font-family: 'Cinzel', Georgia, serif;
     font-weight: bold;
     user-select: none;
 }
 
 #boton-reiniciar:hover {
-    transform: scale(1.1);
     box-shadow: 0 5px 20px rgba(212, 175, 55, 0.5);
-}
-
-@keyframes rebote {
-    0% {
-        transform: scale(0);
-    }
-    50% {
-        transform: scale(1.1);
-    }
-    100% {
-        transform: scale(1);
-    }
-}
-
-@keyframes celebrate {
-    0%, 100% {
-        transform: translateY(0);
-    }
-    50% {
-        transform: translateY(-10px);
-    }
-}
-
-#mensaje.show {
-    animation: rebote 0.5s ease, celebrate 0.5s ease infinite;
 }
 
 @media (max-width: 1200px) {
@@ -347,5 +311,35 @@ h1 {
     
     .zona:last-child {
         margin-left: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    #mensaje {
+        width: 95%;
+        padding: 15px;
+        border-width: 3px;
+    }
+    
+    #mensaje h2 {
+        font-size: 1.5rem;
+    }
+    
+    #mensaje p {
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+    }
+    
+    #boton-reiniciar {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .zona h2 {
+        font-size: 1.1rem;
     }
 }
