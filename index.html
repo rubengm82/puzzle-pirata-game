@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puzzle Pirata - Ensambla el Mapa</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="mapapirata.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Pirata+One&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Burbujas de oxígeno -->
+    <div class="burbuja"></div>
+    <div class="burbuja"></div>
+    <div class="burbuja"></div>
+    <div class="burbuja"></div>
+    <div class="burbuja"></div>
+    <div class="burbuja"></div>
+    <div class="burbuja"></div>
+    <div class="burbuja"></div>
+    
+    <div class="cabecera">
+        <h1><i class="fa-solid fa-flag-pirate"></i> Puzzle Pirata <i class="fa-solid fa-flag-pirate"></i></h1>
+        <button id="boton-musica"><i class="fa-solid fa-music"></i> Música OFF</button>
+    </div>
+    
+    <div class="contenedor">
+        <div class="zona">
+            <h2><i class="fa-solid fa-map"></i> Mapa Objetivo</h2>
+            <div class="rejilla-puzzle" id="rejilla-puzzle">
+                <div class="celda-rejilla" data-numero="1" data-pieza="1"></div>
+                <div class="celda-rejilla" data-numero="2" data-pieza="2"></div>
+                <div class="celda-rejilla" data-numero="3" data-pieza="3"></div>
+                <div class="celda-rejilla" data-numero="4" data-pieza="4"></div>
+                <div class="celda-rejilla" data-numero="5" data-pieza="5"></div>
+                <div class="celda-rejilla" data-numero="6" data-pieza="6"></div>
+                <div class="celda-rejilla" data-numero="7" data-pieza="7"></div>
+                <div class="celda-rejilla" data-numero="8" data-pieza="8"></div>
+            </div>
+        </div>
+        
+        <div class="zona">
+            <h2><i class="fa-solid fa-anchor"></i> Piezas del Tesoro</h2>
+            <div class="contenedor-piezas" id="contenedor-piezas"></div>
+        </div>
+    </div>
+    
+    <div id="mensaje">
+        <h2>¡Felicitaciones!</h2>
+        <p>¡Has ensamblado el mapa del tesoro!</p>
+        <button id="boton-reiniciar"><i class="fa-solid fa-rotate-right"></i> Jugar de Nuevo</button>
+    </div>
+
+    <script src="mapapirata.js"></script>
+</body>
+</html>
