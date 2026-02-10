@@ -277,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Si todas las piezas están colocadas, ganar
                     if (piezasColocadas.length === totalPiezas) {
-                        console.log('¡GANASTE! Reproduciendo aplausos');
+                        console.log('HAS GUANYAT! Reproduint aplaudiments');
                         reproducirSonido(audioAplausos, 'aplausos');
                         setTimeout(function() {
                             mensajeDiv.classList.add('show');
@@ -430,7 +430,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Si todas las piezas están colocadas, ganar
                     if (piezasColocadas.length === totalPiezas) {
-                        console.log('¡GANASTE! Reproduciendo aplausos');
+                        console.log('HAS GUANYAT! Reproduint aplaudiments');
                         reproducirSonido(audioAplausos, 'aplausos');
                         setTimeout(function() {
                             mensajeDiv.classList.add('show');
@@ -497,7 +497,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ============================================
     // BOTÓN DE REINICIAR
     // ============================================
-    // Reinicia el juego从头开始
+    // Reinicia el joc des de l'inici
     botonReiniciar.addEventListener('click', iniciarJuego);
     
     // ============================================
@@ -506,4 +506,3 @@ document.addEventListener('DOMContentLoaded', function() {
     // Llamamos a iniciarJuego cuando se carga la página
     iniciarJuego();
 });
-
